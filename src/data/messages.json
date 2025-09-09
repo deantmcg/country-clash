@@ -4,8 +4,8 @@
       "instructions": "Test your geography knowledge!"
     },
     "questions": {
-      "capitalOf": "What is the capital of {0}?",
-      "countryOf": "Which country has {0} as its capital?",
+      "capitalOf": "What is the capital of",
+      "countryOf": "is the capital of which country?",
       "flagOf": "Which country does this flag belong to?"
     },
     "errors": {
@@ -57,6 +57,10 @@
       "difficulty": "Difficulty: {0}",
       "yourAnswer": "Your answer: {0}",
       "correctAnswer": "Correct answer: {0}"
+    },
+    "result": {
+        "highScore": "New High Score!",
+        "gameOver": "Game Over!"
     }
   },
   "es": {
@@ -64,9 +68,9 @@
       "instructions": "Pon a prueba tus conocimientos sobre países y capitales"
     },
     "questions": {
-      "capitalOf": "Cuál es la capital de {0}?",
-      "countryOf": "Qué país tiene a {0} como su capital?",
-      "flagOf": "A qué país pertenece esta bandera?"
+      "capitalOf": "Cuál es la capital de",
+      "countryOf": "es la capital de qué país?",
+      "flagOf": "¿A qué país pertenece esta bandera?"
     },
     "errors": {
       "enterName": "Por favor ingresa tu nombre para comenzar el juego!"
@@ -117,6 +121,10 @@
       "difficulty": "Dificultad: {0}",
       "yourAnswer": "Tu respuesta: {0}",
       "correctAnswer": "Respuesta correcta: {0}"
+    },
+    "result": {
+        "highScore": "¡Nuevo récord!",
+        "gameOver": "¡Fin del juego!"
     }
   }
 }

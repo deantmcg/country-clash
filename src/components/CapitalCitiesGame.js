@@ -319,7 +319,7 @@ const CapitalCitiesGame = () => {
           </div>
           
           <h2 className="text-3xl font-bold text-white mb-2">
-            {isHighScore ? 'High Score!' : 'Game Over'}
+            {isHighScore ? getMessage('result.highScore') : getMessage('result.gameOver')}
           </h2>
           
           <div className="bg-white/10 rounded-xl p-6 my-6 border border-white/20">
@@ -376,7 +376,8 @@ const CapitalCitiesGame = () => {
                     return (
                       <>
                         <h2 className="text-2xl font-bold text-white mb-4">
-                          What is the capital of
+                          {/* What is the capital of */}
+                          {getMessage('questions.capitalOf')}
                         </h2>
                         <div className="flex flex-col items-center gap-3">
                           <span className={`fi fi-${currentQuestion.code} text-5xl w-24 h-16 rounded-lg shadow-lg border-2 border-white/20`}></span>
@@ -390,7 +391,8 @@ const CapitalCitiesGame = () => {
                     return (
                       <>
                         <h2 className="text-2xl font-bold text-white mb-4">
-                          What country does this flag belong to?
+                          {/* What country does this flag belong to? */}
+                          {getMessage('questions.flagOf')}
                         </h2>
                         <div className="flex justify-center mb-4">
                           <span className={`fi fi-${currentQuestion.code} text-7xl w-32 h-24 rounded-lg shadow-lg border-2 border-white/20`}></span>
@@ -402,7 +404,10 @@ const CapitalCitiesGame = () => {
                       <>
                         <h2 className="text-2xl font-bold text-white mb-4">
                           <span className="text-4xl font-bold text-yellow-300">{currentQuestion.capital}</span>
-                          <div className="mt-3">is the capital of which country?</div>
+                          <div className="mt-3">
+                            {/* is the capital of which country? */}
+                            {getMessage('questions.countryOf')}
+                          </div>
                         </h2>
                         <div className="flex justify-center mb-4">
                           <span className={`fi fi-${currentQuestion.code} text-5xl w-24 h-16 rounded-lg shadow-lg border-2 border-white/20 opacity-0`}></span>

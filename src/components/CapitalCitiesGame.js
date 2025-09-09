@@ -187,6 +187,7 @@ const CapitalCitiesGame = () => {
                 type="text"
                 value={playerName}
                 onChange={(e) => setPlayerName(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && startGame()}
                 className="w-full px-4 py-3 rounded-xl bg-white/20 border border-white/30 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 placeholder="Your name..."
                 maxLength={20}
@@ -271,8 +272,8 @@ const CapitalCitiesGame = () => {
           <div className="text-white text-right">
             <div className="flex gap-1">
               {[...Array(3)].map((_, i) => (
-                <span key={i} className={`text-2xl ${i < lives ? 'text-red-400' : 'text-gray-600'}`}>
-                  ❤️
+                <span key={i} className="text-2xl">
+                  {i < lives ? '❤️' : '🖤'}
                 </span>
               ))}
             </div>

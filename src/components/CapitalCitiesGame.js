@@ -40,6 +40,7 @@ const CapitalCitiesGame = () => {
   const [highScores, setHighScores] = useState([]);
   const [playerName, setPlayerName] = useState('');
   const [usedQuestions, setUsedQuestions] = useState(new Set());
+  const [answerLog, setAnswerLog] = useState([]);
 
   // Load high scores on component mount
   useEffect(() => {
@@ -83,6 +84,7 @@ const CapitalCitiesGame = () => {
     setUserAnswer('');
     setFeedback('');
     setShowAnswer(false);
+    setAnswerLog([]);
     
     const question = generateQuestion();
     setCurrentQuestion(question);
@@ -114,6 +116,16 @@ const CapitalCitiesGame = () => {
     
     setQuestionsAnswered(prev => prev + 1);
     setShowAnswer(true);
+
+    // Add to answer log
+    setAnswerLog(prev => [{
+      country: currentQuestion.country,
+      difficulty: currentQuestion.difficulty,
+      userAnswer: userAnswer.trim(),
+      correctAnswer: currentQuestion.capital,
+      isCorrect: isCorrect,
+      points: isCorrect ? difficulty * 10 : 0
+    }, ...prev]);
     
     // Check if game should end
     if (!isCorrect && lives <= 1) {
@@ -321,14 +333,53 @@ const CapitalCitiesGame = () => {
 
             {/* Feedback */}
             {feedback && (
-              <div className={`mt-6 p-4 rounded-xl border ${
+              <div className={`mt-6 p-4 rounded-xl border shadow-lg transform scale-105 ${
                 feedback.includes('Correct') 
-                  ? 'bg-green-500/20 border-green-400 text-green-100' 
-                  : 'bg-red-500/20 border-red-400 text-red-100'
+                  ? 'bg-green-500/30 border-green-400 text-green-100' 
+                  : 'bg-red-500/30 border-red-400 text-red-100'
               }`}>
-                <p className="font-bold">{feedback}</p>
+                <p className="font-bold text-lg">{feedback}</p>
               </div>
             )}
+
+            {/* Answer Log */}
+            {answerLog.length > 0 && (
+              <div className="mt-8">
+                <h3 className="text-white font-bold mb-4">Answer Log:</h3>
+                <div className="space-y-2 max-h-60 overflow-y-auto">
+                  {answerLog.map((log, index) => (
+                    <div
+                      key={index}
+                      className={`p-3 rounded-lg border ${
+                        log.isCorrect
+                          ? 'bg-green-500/10 border-green-400/30'
+                          : 'bg-red-500/10 border-red-400/30'
+                      }`}
+                    >
+                      <div className="flex justify-between text-sm">
+                        <span className="text-white/90">{log.country}</span>
+                        <span className="text-white/70">Difficulty: {log.difficulty}</span>
+                      </div>
+                      <div className="mt-1 text-sm">
+                        <span className="text-white/80">Your answer: {log.userAnswer}</span>
+                        {!log.isCorrect && (
+                          <span className="text-white/80 block">
+                            Correct answer: {log.correctAnswer}
+                          </span>
+                        )}
+                      </div>
+                      {log.isCorrect && (
+                        <div className="mt-1 text-sm text-green-400">
+                          +{log.points} points
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+
           </div>
         )}
       </div>

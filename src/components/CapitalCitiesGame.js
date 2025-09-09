@@ -39,61 +39,55 @@ const CapitalCitiesGame = () => {
     setHighScores(savedScores);
   }, []);
 
+  // Helper: get available question types for a country
+  const getAvailableQuestionTypes = (countryName) => {
+    return Object.values(QUESTION_TYPES).filter(type => 
+      !usedQuestionTypes.has(`${countryName}-${type}`)
+    );
+  };
+
+  // Helper: select a random question type
+  const selectRandomQuestionType = (country) => {
+    const availableTypes = getAvailableQuestionTypes(country.name);
+    const questionType = availableTypes[Math.floor(Math.random() * availableTypes.length)];
+    setLastQuestionType(questionType);
+    return questionType;
+  };
+
+  // Helper: get available countries for current difficulty
+  const getAvailableCountries = () => {
+    return COUNTRIES_DATA.filter(country => 
+      country.difficulty <= difficulty && 
+      getAvailableQuestionTypes(country.name).length > 0
+    );
+  };
+
   // Generate a new question based on current difficulty
   const generateQuestion = () => {
-    const availableQuestions = COUNTRIES_DATA.filter(country => 
-      country.difficulty <= difficulty && 
-      !Object.values(QUESTION_TYPES).some(type => 
-        usedQuestionTypes.has(`${country.name}-${type}`)
-      )
-    );
+    let availableCountries = getAvailableCountries();
     
-    if (availableQuestions.length === 0) {
+    if (availableCountries.length === 0) {
       // Reset used questions if we've exhausted all options
       setUsedQuestionTypes(new Set());
-      const resetAvailable = COUNTRIES_DATA.filter(country => country.difficulty <= difficulty);
-      if (resetAvailable.length === 0) return null;
-      
-      const randomIndex = Math.floor(Math.random() * resetAvailable.length);
-      const question = resetAvailable[randomIndex];
-      
-      // Pick next question type that hasn't been used for this country
-      const availableTypes = Object.values(QUESTION_TYPES).filter(type => 
-        !usedQuestionTypes.has(`${question.name}-${type}`)
-      );
-      
-      const questionType = availableTypes[Math.floor(Math.random() * availableTypes.length)];
-      setLastQuestionType(questionType);
-      
-      console.log('Reset: Generated question:', {
-        country: question.name,
-        questionType: questionType,
-        difficulty: question.difficulty
-      });
-      
-      return { ...question, questionType };
+      availableCountries = COUNTRIES_DATA.filter(country => country.difficulty <= difficulty);
+      if (availableCountries.length === 0) return null;
     }
     
-    const randomIndex = Math.floor(Math.random() * availableQuestions.length);
-    const question = availableQuestions[randomIndex];
+    const randomIndex = Math.floor(Math.random() * availableCountries.length);
+    const country = availableCountries[randomIndex];
+    const questionType = selectRandomQuestionType(country);
     
-    // Pick next question type that hasn't been used for this country
-    const availableTypes = Object.values(QUESTION_TYPES).filter(type => 
-      !usedQuestionTypes.has(`${question.name}-${type}`)
-    );
-    
-    const questionType = availableTypes[Math.floor(Math.random() * availableTypes.length)];
+    const question = { ...country, questionType };
     
     console.log('Generated question:', {
       country: question.name,
-      questionType: questionType,
+      questionType,
       lastType: lastQuestionType,
       difficulty: question.difficulty,
-      remainingQuestions: availableQuestions.length
+      remainingQuestions: availableCountries.length
     });
     
-    setLastQuestionType(questionType);
-    return { ...question, questionType };
+    return question;
   };
 
   // Start a new game
@@ -120,18 +114,22 @@ const CapitalCitiesGame = () => {
     setCurrentQuestion(question);
   };
 
-  // Get feedback message based on question type and result
-  const getFeedbackMessage = (question, isCorrect, points = 0, userAnswer = '') => {
-    if (isCorrect) {
-      let feedback = getMessage('feedback.correctPoints', points);
-      // Add difficulty increase message if applicable
-      if ((questionsAnswered + 1) % 5 === 0 && difficulty < 3) {
-        feedback = `${feedback} - ${getMessage('feedback.difficultyIncrease')}`;
-      }
-      return feedback;
-    }
+  // Check if difficulty should increase
+  const shouldIncreaseDifficulty = () => {
+    return (questionsAnswered + 1) % 5 === 0 && difficulty < 3;
+  };
 
-    // Wrong answer or skipped
+  // Get correct answer feedback message
+  const getCorrectFeedbackMessage = (points) => {
+    let feedback = getMessage('feedback.correctPoints', points);
+    if (shouldIncreaseDifficulty()) {
+      feedback = `${feedback} - ${getMessage('feedback.difficultyIncrease')}`;
+    }
+    return feedback;
+  };
+
+  // Get wrong answer feedback message
+  const getWrongFeedbackMessage = (question) => {
     switch (question.questionType) {
       case QUESTION_TYPES.CAPITAL:
         return getMessage('feedback.wrongCapital', question.name, question.capital);
@@ -144,24 +142,32 @@ const CapitalCitiesGame = () => {
     }
   };
 
+  // Get feedback message based on question type and result
+  const getFeedbackMessage = (question, isCorrect, points = 0) => {
+    return isCorrect 
+      ? getCorrectFeedbackMessage(points)
+      : getWrongFeedbackMessage(question);
+  };
+
+  // Helper function to check answers
+  const checkAnswer = (question, answer) => {
+    if (!answer.trim()) return { isCorrect: false, correctAnswer: '' };
+    
+    const correctAnswer = question.questionType === QUESTION_TYPES.CAPITAL
+      ? question.capital.toLowerCase()
+      : question.name.toLowerCase();
+    
+    return {
+      isCorrect: answer.toLowerCase().trim() === correctAnswer,
+      correctAnswer
+    };
+  };
+
   // Submit answer
   const submitAnswer = () => {
     if (!userAnswer.trim()) return;
     
-    let isCorrect = false;
-    let correctAnswer = '';
-    
-    switch (currentQuestion.questionType) {
-      case QUESTION_TYPES.CAPITAL:
-        correctAnswer = currentQuestion.capital.toLowerCase();
-        break;
-      case QUESTION_TYPES.FLAG:
-      case QUESTION_TYPES.REVERSE_CAPITAL:
-        correctAnswer = currentQuestion.name.toLowerCase();
-        break;
-    }
-    
-    isCorrect = userAnswer.toLowerCase().trim() === correctAnswer;
+    const { isCorrect, correctAnswer } = checkAnswer(currentQuestion, userAnswer);
     
     // Mark this question type as used for this country
     const newUsedQuestions = new Set(usedQuestionTypes);
@@ -180,17 +186,22 @@ const CapitalCitiesGame = () => {
     setQuestionsAnswered(prev => prev + 1);
     setShowAnswer(true);
 
-    // Add to answer log
-    setAnswerLog(prev => [{
-      flag: currentQuestion.code,
-      country: currentQuestion.name,
-      questionType: currentQuestion.questionType,
-      difficulty: currentQuestion.difficulty,
-      userAnswer: userAnswer.trim(),
-      correctAnswer: correctAnswer,
-      isCorrect: isCorrect,
-      points: isCorrect ? difficulty * 10 : 0
-    }, ...prev]);    // Check if game should end
+    // Create and add new log entry
+    const createLogEntry = (question, userAns, correct, correctAns) => ({
+      flag: question.code,
+      country: question.name,
+      questionType: question.questionType,
+      difficulty: question.difficulty,
+      userAnswer: userAns.trim(),
+      correctAnswer: correctAns,
+      isCorrect: correct,
+      points: correct ? question.difficulty * 10 : 0
+    });
+
+    setAnswerLog(prev => [
+      createLogEntry(currentQuestion, userAnswer, isCorrect, correctAnswer),
+      ...prev
+    ]);    // Check if game should end
     if (!isCorrect && lives <= 1) {
       setTimeout(() => endGame(), 2000);
       return;

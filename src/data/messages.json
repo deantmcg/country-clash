@@ -22,7 +22,8 @@
     "buttons": {
       "startGame": " Start Game",
       "submitAnswer": "Submit Answer ",
-      "returnToMenu": " Return to Menu"
+      "returnToMenu": " Return to Menu",
+      "skipQuestion": "Skip"
     },
     "stats": {
       "score": "Score: {0}",
@@ -86,7 +87,8 @@
     "buttons": {
       "startGame": " Comenzar Juego",
       "submitAnswer": "Enviar Respuesta ",
-      "returnToMenu": " Volver al Menú"
+      "returnToMenu": " Volver al Menú",
+      "skipQuestion": "Saltar"
     },
     "stats": {
       "score": "Puntuación: {0}",

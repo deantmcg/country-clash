@@ -120,6 +120,30 @@ const CapitalCitiesGame = () => {
     setCurrentQuestion(question);
   };
 
+  // Get feedback message based on question type and result
+  const getFeedbackMessage = (question, isCorrect, points = 0, userAnswer = '') => {
+    if (isCorrect) {
+      let feedback = getMessage('feedback.correctPoints', points);
+      // Add difficulty increase message if applicable
+      if ((questionsAnswered + 1) % 5 === 0 && difficulty < 3) {
+        feedback = `${feedback} - ${getMessage('feedback.difficultyIncrease')}`;
+      }
+      return feedback;
+    }
+
+    // Wrong answer or skipped
+    switch (question.questionType) {
+      case QUESTION_TYPES.CAPITAL:
+        return getMessage('feedback.wrongCapital', question.name, question.capital);
+      case QUESTION_TYPES.FLAG:
+        return getMessage('feedback.wrongFlag', question.name);
+      case QUESTION_TYPES.REVERSE_CAPITAL:
+        return getMessage('feedback.wrongCountry', question.capital, question.name);
+      default:
+        return '';
+    }
+  };
+
   // Submit answer
   const submitAnswer = () => {
     if (!userAnswer.trim()) return;
@@ -147,26 +171,10 @@ const CapitalCitiesGame = () => {
     if (isCorrect) {
       const points = difficulty * 10;
       setScore(prev => prev + points);
-      setFeedback(getMessage('feedback.correctPoints', points));
-      
-      // Increase difficulty every 5 correct answers
-      if ((questionsAnswered + 1) % 5 === 0 && difficulty < 3) {
-        setDifficulty(prev => prev + 1);
-        setFeedback(prev => `${prev} - ${getMessage('feedback.difficultyIncrease')}`);
-      }
+      setFeedback(getFeedbackMessage(currentQuestion, true, points));
     } else {
       setLives(prev => prev - 1);
-      switch (currentQuestion.questionType) {
-        case QUESTION_TYPES.CAPITAL:
-          setFeedback(getMessage('feedback.wrongCapital', currentQuestion.name, currentQuestion.capital));
-          break;
-        case QUESTION_TYPES.FLAG:
-          setFeedback(getMessage('feedback.wrongFlag', currentQuestion.name));
-          break;
-        case QUESTION_TYPES.REVERSE_CAPITAL:
-          setFeedback(getMessage('feedback.wrongCountry', currentQuestion.capital, currentQuestion.name));
-          break;
-      }
+      setFeedback(getFeedbackMessage(currentQuestion, false));
     }
     
     setQuestionsAnswered(prev => prev + 1);
@@ -436,13 +444,37 @@ const CapitalCitiesGame = () => {
                   autoFocus
                 />
                 
-                <button
-                  onClick={submitAnswer}
-                  disabled={!userAnswer.trim() || showAnswer}
-                  className="w-full bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white font-bold py-4 px-6 rounded-xl transform hover:scale-105 transition-all shadow-lg"
-                >
-                  {getMessage('buttons.submitAnswer')}
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      setShowAnswer(true);
+                      setFeedback(getFeedbackMessage(currentQuestion, false));
+                      setLives(prev => prev - 1);
+                      setTimeout(() => {
+                        setUserAnswer('');
+                        setFeedback('');
+                        setShowAnswer(false);
+                        const nextQuestion = generateQuestion();
+                        if (nextQuestion) {
+                          setCurrentQuestion(nextQuestion);
+                        } else {
+                          endGame();
+                        }
+                      }, 2000);
+                    }}
+                    title={getMessage('buttons.skipQuestion')}
+                    className="aspect-square h-[58px] bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transform hover:scale-105 transition-all shadow-lg flex items-center justify-center text-2xl"
+                  >
+                    ✕
+                  </button>
+                  <button
+                    onClick={submitAnswer}
+                    disabled={!userAnswer.trim() || showAnswer}
+                    className="flex-1 bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white font-bold py-4 px-6 rounded-xl transform hover:scale-105 transition-all shadow-lg"
+                  >
+                    {getMessage('buttons.submitAnswer')}
+                  </button>
+                </div>
               </div>
             )}
 

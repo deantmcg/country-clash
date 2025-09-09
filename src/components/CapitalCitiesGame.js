@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import countriesData from '../data/countries.json';
+import { getMessage } from '../utils/messageUtils';
 
 // Game data from JSON file
 const COUNTRIES_DATA = countriesData.countries.map(country => ({
@@ -97,7 +98,7 @@ const CapitalCitiesGame = () => {
   // Start a new game
   const startGame = () => {
     if (!playerName.trim()) {
-      alert('Please enter your name to start the game!');
+      alert(getMessage('errors.enterName'));
       return;
     }
     
@@ -145,24 +146,24 @@ const CapitalCitiesGame = () => {
     if (isCorrect) {
       const points = difficulty * 10;
       setScore(prev => prev + points);
-      setFeedback(`Correct! +${points} points`);
+      setFeedback(getMessage('feedback.correctPoints', points));
       
       // Increase difficulty every 5 correct answers
       if ((questionsAnswered + 1) % 5 === 0 && difficulty < 3) {
         setDifficulty(prev => prev + 1);
-        setFeedback(prev => prev + ` - Difficulty increased!`);
+        setFeedback(prev => `${prev} - ${getMessage('feedback.difficultyIncrease')}`);
       }
     } else {
       setLives(prev => prev - 1);
       switch (currentQuestion.questionType) {
         case QUESTION_TYPES.CAPITAL:
-          setFeedback(`Wrong! The capital of ${currentQuestion.name} is ${currentQuestion.capital}`);
+          setFeedback(getMessage('feedback.wrongCapital', currentQuestion.name, currentQuestion.capital));
           break;
         case QUESTION_TYPES.FLAG:
-          setFeedback(`Wrong! This is the flag of ${currentQuestion.name}`);
+          setFeedback(getMessage('feedback.wrongFlag', currentQuestion.name));
           break;
         case QUESTION_TYPES.REVERSE_CAPITAL:
-          setFeedback(`Wrong! ${currentQuestion.capital} is the capital of ${currentQuestion.name}`);
+          setFeedback(getMessage('feedback.wrongCountry', currentQuestion.capital, currentQuestion.name));
           break;
       }
     }
@@ -248,14 +249,14 @@ const CapitalCitiesGame = () => {
       <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 flex items-center justify-center p-4">
         <div className="bg-white/10 backdrop-blur-md rounded-3xl p-8 max-w-md w-full border border-white/20 shadow-2xl">
           <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-white mb-2">🏛️ Capital Cities</h1>
-            <p className="text-blue-200">Test your geography knowledge!</p>
+            <h1 className="text-4xl font-bold text-white mb-2">{getMessage('game.welcome')}</h1>
+            <p className="text-blue-200">{getMessage('game.instructions')}</p>
           </div>
           
           <div className="space-y-6">
             <div>
               <label className="block text-white text-sm font-medium mb-2">
-                Enter your name:
+                {getMessage('input.enterName')}
               </label>
               <input
                 type="text"
@@ -263,7 +264,7 @@ const CapitalCitiesGame = () => {
                 onChange={(e) => setPlayerName(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && startGame()}
                 className="w-full px-4 py-3 rounded-xl bg-white/20 border border-white/30 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                placeholder="Your name..."
+                placeholder={getMessage('input.namePlaceholder')}
                 maxLength={20}
               />
             </div>
@@ -272,17 +273,17 @@ const CapitalCitiesGame = () => {
               onClick={startGame}
               className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-4 px-6 rounded-xl transform hover:scale-105 transition-all shadow-lg"
             >
-              🎮 Start Game
+              {getMessage('buttons.startGame')}
             </button>
             
             {highScores.length > 0 && (
               <div className="bg-white/10 rounded-xl p-4 border border-white/20">
-                <h3 className="text-white font-bold text-center mb-3">🏆 High Scores</h3>
+                <h3 className="text-white font-bold text-center mb-3">{getMessage('highScores.title')}</h3>
                 <div className="space-y-2 max-h-48 overflow-y-auto">
                   {highScores.slice(0, 5).map((score, index) => (
                     <div key={index} className="flex justify-between text-sm text-white/80">
-                      <span>{index + 1}. {score.name}</span>
-                      <span>{score.score} pts</span>
+                      <span>{getMessage('highScores.entry', index + 1, score.name)}</span>
+                      <span>{getMessage('stats.score', score.score)}</span>
                     </div>
                   ))}
                 </div>
@@ -291,8 +292,8 @@ const CapitalCitiesGame = () => {
           </div>
           
           <div className="mt-8 text-center text-white/60 text-sm">
-            <p>💡 Difficulty increases every 5 correct answers</p>
-            <p>❤️ You have 3 lives - good luck!</p>
+            <p>{getMessage('tips.difficultyIncrease')}</p>
+            <p>{getMessage('tips.lives')}</p>
           </div>
         </div>
       </div>
@@ -316,9 +317,9 @@ const CapitalCitiesGame = () => {
           
           <div className="bg-white/10 rounded-xl p-6 my-6 border border-white/20">
             <div className="text-white space-y-2">
-              <p className="text-xl">Final Score: <span className="font-bold text-yellow-300">{score}</span></p>
-              <p>Questions Answered: {questionsAnswered}</p>
-              <p>Highest Difficulty: {difficulty}</p>
+              <p className="text-xl">{getMessage('stats.finalStats.score', score)}</p>
+              <p>{getMessage('stats.finalStats.questionsAnswered', questionsAnswered)}</p>
+              <p>{getMessage('stats.finalStats.highestDifficulty', difficulty)}</p>
             </div>
           </div>
           
@@ -326,7 +327,7 @@ const CapitalCitiesGame = () => {
             onClick={returnToMenu}
             className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-4 px-6 rounded-xl transform hover:scale-105 transition-all shadow-lg"
           >
-            🏠 Return to Menu
+            {getMessage('buttons.returnToMenu')}
           </button>
         </div>
       </div>
@@ -340,8 +341,8 @@ const CapitalCitiesGame = () => {
         {/* Game stats */}
         <div className="flex justify-between items-center mb-6">
           <div className="text-white">
-            <p className="font-bold">Score: {score}</p>
-            <p className="text-sm text-white/80">Level {difficulty}</p>
+            <p className="font-bold">{getMessage('stats.score', score)}</p>
+            <p className="text-sm text-white/80">{getMessage('stats.level', difficulty)}</p>
           </div>
           <div className="text-white text-right">
             <div className="flex gap-1">
@@ -351,7 +352,7 @@ const CapitalCitiesGame = () => {
                 </span>
               ))}
             </div>
-            <p className="text-sm text-white/80">Questions: {questionsAnswered}</p>
+            <p className="text-sm text-white/80">{getMessage('stats.questions', questionsAnswered)}</p>
           </div>
         </div>
 
@@ -415,7 +416,7 @@ const CapitalCitiesGame = () => {
                   onChange={(e) => setUserAnswer(e.target.value)}
                   onKeyPress={handleKeyPress}
                   className="w-full px-4 py-3 text-lg rounded-xl bg-white/20 border border-white/30 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-yellow-400 text-center"
-                  placeholder={currentQuestion.questionType === QUESTION_TYPES.CAPITAL ? "Enter capital city..." : "Enter country name..."}
+                  placeholder={getMessage(`input.answerPlaceholder.${currentQuestion.questionType === QUESTION_TYPES.CAPITAL ? 'capital' : 'country'}`)}
                   disabled={showAnswer}
                   autoFocus
                 />
@@ -425,7 +426,7 @@ const CapitalCitiesGame = () => {
                   disabled={!userAnswer.trim() || showAnswer}
                   className="w-full bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white font-bold py-4 px-6 rounded-xl transform hover:scale-105 transition-all shadow-lg"
                 >
-                  Submit Answer ✓
+                  {getMessage('buttons.submitAnswer')}
                 </button>
               </div>
             )}
@@ -444,7 +445,7 @@ const CapitalCitiesGame = () => {
             {/* Answer Log */}
             {answerLog.length > 0 && (
               <div className="mt-8">
-                <h3 className="text-white font-bold mb-4">Answer Log:</h3>
+                <h3 className="text-white font-bold mb-4">{getMessage('answerLog.title')}</h3>
                 <div className="space-y-2 max-h-60 overflow-y-auto">
                   {answerLog.map((log, index) => (
                     <div
@@ -460,25 +461,25 @@ const CapitalCitiesGame = () => {
                           <span className={`fi fi-${log.flag} w-6 h-4`}></span>
                           <span className="text-white/90">
                             {log.questionType === QUESTION_TYPES.CAPITAL ? 
-                              `${log.country} → ${log.correctAnswer}` : 
+                              getMessage('answerLog.capitalFormat', log.country, log.correctAnswer) : 
                               log.questionType === QUESTION_TYPES.REVERSE_CAPITAL ?
-                                `${log.correctAnswer} → ${log.userAnswer}` :
+                                getMessage('answerLog.reverseCapitalFormat', log.correctAnswer, log.userAnswer) :
                                 log.correctAnswer}
                           </span>
                         </div>
-                        <span className="text-white/70">Difficulty: {log.difficulty}</span>
+                        <span className="text-white/70">{getMessage('answerLog.difficulty', log.difficulty)}</span>
                       </div>
                       <div className="mt-1 text-sm">
-                        <span className="text-white/80">Your answer: {log.userAnswer}</span>
+                        <span className="text-white/80">{getMessage('answerLog.yourAnswer', log.userAnswer)}</span>
                         {!log.isCorrect && (
                           <span className="text-white/80 block">
-                            Correct answer: {log.correctAnswer}
+                            {getMessage('answerLog.correctAnswer', log.correctAnswer)}
                           </span>
                         )}
                       </div>
                       {log.isCorrect && (
                         <div className="mt-1 text-sm text-green-400">
-                          +{log.points} points
+                          {getMessage('feedback.points', log.points)}
                         </div>
                       )}
                     </div>

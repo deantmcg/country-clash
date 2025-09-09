@@ -1,0 +1,114 @@
+{
+  "en": {
+    "game": {
+      "welcome": "🏛️ Capital Cities",
+      "instructions": "Test your geography knowledge!",
+      "score": "Score: {0}",
+      "highScore": "High Score: {0}",
+      "lives": "Lives: {0}",
+      "gameOver": "Game Over! Final Score: {0}",
+      "newHighScore": "New High Score: {0}!",
+      "playAgain": "Play Again",
+      "correct": "Correct!",
+      "incorrect": "Incorrect! The capital of {0} is {1}",
+      "nextQuestion": "Next Question"
+    },
+    "questions": {
+      "capitalOf": "What is the capital of {0}?",
+      "countryOf": "Which country has {0} as its capital?",
+      "flagOf": "Which country does this flag belong to?"
+    },
+    "difficulty": {
+      "level1": "Very Easy",
+      "level2": "Easy",
+      "level3": "Medium",
+      "level4": "Hard",
+      "level5": "Very Hard"
+    },
+    "errors": {
+      "loadFailed": "Failed to load game data",
+      "invalidAnswer": "Please select an answer",
+      "gameDataMissing": "Game data is missing or corrupted",
+      "enterName": "Please enter your name to start the game!"
+    },
+    "input": {
+      "enterName": "Enter your name:",
+      "namePlaceholder": "Your name...",
+      "answerPlaceholder": {
+        "capital": "Enter capital city...",
+        "country": "Enter country name..."
+      }
+    },
+    "buttons": {
+      "startGame": "🎮 Start Game",
+      "submitAnswer": "Submit Answer ✓",
+      "returnToMenu": "🏠 Return to Menu"
+    },
+    "stats": {
+      "score": "Score: {0}",
+      "level": "Level {0}",
+      "questions": "Questions: {0}",
+      "finalStats": {
+        "score": "Final Score: {0}",
+        "questionsAnswered": "Questions Answered: {0}",
+        "highestDifficulty": "Highest Difficulty: {0}"
+      }
+    },
+    "highScores": {
+      "title": "🏆 High Scores",
+      "entry": "{0}. {1}"
+    },
+    "tips": {
+      "difficultyIncrease": "💡 Difficulty increases every 5 correct answers",
+      "lives": "❤️ You have 3 lives - good luck!"
+    },
+    "feedback": {
+      "points": "+{0} points",
+      "difficultyIncrease": "Difficulty increased!",
+      "correctPoints": "Correct! +{0} points",
+      "wrongCapital": "Wrong! The capital of {0} is {1}",
+      "wrongFlag": "Wrong! This is the flag of {0}",
+      "wrongCountry": "Wrong! {0} is the capital of {1}"
+    },
+    "answerLog": {
+      "title": "Answer Log:",
+      "capitalFormat": "{0} → {1}",
+      "reverseCapitalFormat": "{0} → {1}",
+      "difficulty": "Difficulty: {0}",
+      "yourAnswer": "Your answer: {0}",
+      "correctAnswer": "Correct answer: {0}"
+    }
+  },
+  "es": {
+    "game": {
+      "welcome": "¡Bienvenido a Country Clash!",
+      "instructions": "Pon a prueba tus conocimientos sobre países y capitales",
+      "score": "Puntuación: {0}",
+      "highScore": "Puntuación Máxima: {0}",
+      "lives": "Vidas: {0}",
+      "gameOver": "¡Juego Terminado! Puntuación Final: {0}",
+      "newHighScore": "¡Nueva Puntuación Máxima: {0}!",
+      "playAgain": "Jugar de Nuevo",
+      "correct": "¡Correcto!",
+      "incorrect": "¡Incorrecto! La capital de {0} es {1}",
+      "nextQuestion": "Siguiente Pregunta"
+    },
+    "questions": {
+      "capitalOf": "¿Cuál es la capital de {0}?",
+      "countryOf": "¿Qué país tiene a {0} como su capital?",
+      "flagOf": "¿A qué país pertenece esta bandera?"
+    },
+    "difficulty": {
+      "level1": "Muy Fácil",
+      "level2": "Fácil",
+      "level3": "Medio",
+      "level4": "Difícil",
+      "level5": "Muy Difícil"
+    },
+    "errors": {
+      "loadFailed": "Error al cargar los datos del juego",
+      "invalidAnswer": "Por favor selecciona una respuesta",
+      "gameDataMissing": "Faltan datos del juego o están corruptos"
+    }
+  }
+}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import countriesData from '../data/countries.json';
 import { getMessage } from '../utils/messageUtils';
+import LanguageSelector from './LanguageSelector';
 
 // Game data from JSON file
 const COUNTRIES_DATA = countriesData.countries.map(country => ({
@@ -247,6 +248,9 @@ const CapitalCitiesGame = () => {
   if (gameState === 'menu') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 flex items-center justify-center p-4">
+        <div className="absolute top-4 right-4">
+          <LanguageSelector onChange={() => setCurrentQuestion(currentQuestion)} />
+        </div>
         <div className="bg-white/10 backdrop-blur-md rounded-3xl p-8 max-w-md w-full border border-white/20 shadow-2xl">
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold text-white mb-2">🏛️ Country Clash 🌍</h1>
@@ -306,6 +310,9 @@ const CapitalCitiesGame = () => {
     
     return (
       <div className="min-h-screen bg-gradient-to-br from-red-900 via-purple-900 to-pink-900 flex items-center justify-center p-4">
+        <div className="absolute top-4 right-4">
+          <LanguageSelector onChange={() => setCurrentQuestion(currentQuestion)} />
+        </div>
         <div className="bg-white/10 backdrop-blur-md rounded-3xl p-8 max-w-md w-full border border-white/20 shadow-2xl text-center">
           <div className="text-6xl mb-4">
             {isHighScore ? '🏆' : '🎯'}
@@ -337,6 +344,9 @@ const CapitalCitiesGame = () => {
   // Render game screen
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-900 via-teal-900 to-cyan-900 flex items-center justify-center p-4">
+        <div className="absolute top-4 right-4">
+          <LanguageSelector onChange={() => setCurrentQuestion(currentQuestion)} />
+        </div>
       <div className="bg-white/10 backdrop-blur-md rounded-3xl p-8 max-w-lg w-full border border-white/20 shadow-2xl">
         {/* Game stats */}
         <div className="flex justify-between items-center mb-6">

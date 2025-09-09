@@ -1,32 +1,20 @@
 import React, { useState, useEffect } from 'react';
+import countriesData from '../data/countries.json';
 
-// Game data - countries and their capitals
-const COUNTRIES_DATA = [
-  { country: "France", capital: "Paris", difficulty: 1 },
-  { country: "Germany", capital: "Berlin", difficulty: 1 },
-  { country: "Italy", capital: "Rome", difficulty: 1 },
-  { country: "Spain", capital: "Madrid", difficulty: 1 },
-  { country: "United Kingdom", capital: "London", difficulty: 1 },
-  { country: "Japan", capital: "Tokyo", difficulty: 1 },
-  { country: "Australia", capital: "Canberra", difficulty: 2 },
-  { country: "Brazil", capital: "Brasília", difficulty: 2 },
-  { country: "Canada", capital: "Ottawa", difficulty: 2 },
-  { country: "India", capital: "New Delhi", difficulty: 2 },
-  { country: "South Africa", capital: "Cape Town", difficulty: 2 },
-  { country: "Netherlands", capital: "Amsterdam", difficulty: 2 },
-  { country: "Switzerland", capital: "Bern", difficulty: 2 },
-  { country: "Turkey", capital: "Ankara", difficulty: 2 },
-  { country: "Kazakhstan", capital: "Nur-Sultan", difficulty: 3 },
-  { country: "Myanmar", capital: "Naypyidaw", difficulty: 3 },
-  { country: "Sri Lanka", capital: "Sri Jayawardenepura Kotte", difficulty: 3 },
-  { country: "Côte d'Ivoire", capital: "Yamoussoukro", difficulty: 3 },
-  { country: "Palau", capital: "Ngerulmud", difficulty: 3 },
-  { country: "Benin", capital: "Porto-Novo", difficulty: 3 },
-  { country: "Bolivia", capital: "Sucre", difficulty: 3 },
-  { country: "Montenegro", capital: "Podgorica", difficulty: 3 }
-];
+// Game data from JSON file
+const COUNTRIES_DATA = countriesData.countries.map(country => ({
+  ...country,
+  flag: `fi fi-${country.code}` // Add flag class for each country
+}));
 
 const CapitalCitiesGame = () => {
+  // Question types
+  const QUESTION_TYPES = {
+    CAPITAL: 'capital',         // "What is the capital of Spain?"
+    FLAG: 'flag',              // "What country does this flag belong to?"
+    REVERSE_CAPITAL: 'reverse'  // "Madrid is the capital of which country?"
+  };
+
   // Game state
   const [gameState, setGameState] = useState('menu'); // 'menu', 'playing', 'gameOver'
   const [currentQuestion, setCurrentQuestion] = useState(null);
@@ -39,7 +27,8 @@ const CapitalCitiesGame = () => {
   const [showAnswer, setShowAnswer] = useState(false);
   const [highScores, setHighScores] = useState([]);
   const [playerName, setPlayerName] = useState('');
-  const [usedQuestions, setUsedQuestions] = useState(new Set());
+  const [usedQuestionTypes, setUsedQuestionTypes] = useState(new Set());
+  const [lastQuestionType, setLastQuestionType] = useState(null);
   const [answerLog, setAnswerLog] = useState([]);
 
   // Load high scores on component mount
@@ -50,22 +39,59 @@ const CapitalCitiesGame = () => {
 
   // Generate a new question based on current difficulty
   const generateQuestion = () => {
-    const availableQuestions = COUNTRIES_DATA.filter(
-      country => country.difficulty <= difficulty && !usedQuestions.has(country.country)
+    const availableQuestions = COUNTRIES_DATA.filter(country => 
+      country.difficulty <= difficulty && 
+      !Object.values(QUESTION_TYPES).some(type => 
+        usedQuestionTypes.has(`${country.name}-${type}`)
+      )
     );
     
     if (availableQuestions.length === 0) {
       // Reset used questions if we've exhausted all options
-      setUsedQuestions(new Set());
+      setUsedQuestionTypes(new Set());
       const resetAvailable = COUNTRIES_DATA.filter(country => country.difficulty <= difficulty);
       if (resetAvailable.length === 0) return null;
       
       const randomIndex = Math.floor(Math.random() * resetAvailable.length);
-      return resetAvailable[randomIndex];
+      const question = resetAvailable[randomIndex];
+      
+      // Pick next question type that hasn't been used for this country
+      const availableTypes = Object.values(QUESTION_TYPES).filter(type => 
+        !usedQuestionTypes.has(`${question.name}-${type}`)
+      );
+      
+      const questionType = availableTypes[Math.floor(Math.random() * availableTypes.length)];
+      setLastQuestionType(questionType);
+      
+      console.log('Reset: Generated question:', {
+        country: question.name,
+        questionType: questionType,
+        difficulty: question.difficulty
+      });
+      
+      return { ...question, questionType };
     }
     
     const randomIndex = Math.floor(Math.random() * availableQuestions.length);
-    return availableQuestions[randomIndex];
+    const question = availableQuestions[randomIndex];
+    
+    // Pick next question type that hasn't been used for this country
+    const availableTypes = Object.values(QUESTION_TYPES).filter(type => 
+      !usedQuestionTypes.has(`${question.name}-${type}`)
+    );
+    
+    const questionType = availableTypes[Math.floor(Math.random() * availableTypes.length)];
+    
+    console.log('Generated question:', {
+      country: question.name,
+      questionType: questionType,
+      lastType: lastQuestionType,
+      difficulty: question.difficulty,
+      remainingQuestions: availableQuestions.length
+    });
+    
+    setLastQuestionType(questionType);
+    return { ...question, questionType };
   };
 
   // Start a new game
@@ -75,18 +101,20 @@ const CapitalCitiesGame = () => {
       return;
     }
     
+    console.log('Starting new game'); // Debug log
     setGameState('playing');
     setScore(0);
     setLives(3);
     setQuestionsAnswered(0);
     setDifficulty(1);
-    setUsedQuestions(new Set());
+    setUsedQuestionTypes(new Set());
     setUserAnswer('');
     setFeedback('');
     setShowAnswer(false);
     setAnswerLog([]);
     
     const question = generateQuestion();
+    console.log('Initial question:', question); // Debug log
     setCurrentQuestion(question);
   };
 
@@ -94,10 +122,25 @@ const CapitalCitiesGame = () => {
   const submitAnswer = () => {
     if (!userAnswer.trim()) return;
     
-    const isCorrect = userAnswer.toLowerCase().trim() === currentQuestion.capital.toLowerCase();
-    const newUsedQuestions = new Set(usedQuestions);
-    newUsedQuestions.add(currentQuestion.country);
-    setUsedQuestions(newUsedQuestions);
+    let isCorrect = false;
+    let correctAnswer = '';
+    
+    switch (currentQuestion.questionType) {
+      case QUESTION_TYPES.CAPITAL:
+        correctAnswer = currentQuestion.capital.toLowerCase();
+        break;
+      case QUESTION_TYPES.FLAG:
+      case QUESTION_TYPES.REVERSE_CAPITAL:
+        correctAnswer = currentQuestion.name.toLowerCase();
+        break;
+    }
+    
+    isCorrect = userAnswer.toLowerCase().trim() === correctAnswer;
+    
+    // Mark this question type as used for this country
+    const newUsedQuestions = new Set(usedQuestionTypes);
+    newUsedQuestions.add(`${currentQuestion.name}-${currentQuestion.questionType}`);
+    setUsedQuestionTypes(newUsedQuestions);
     
     if (isCorrect) {
       const points = difficulty * 10;
@@ -111,7 +154,17 @@ const CapitalCitiesGame = () => {
       }
     } else {
       setLives(prev => prev - 1);
-      setFeedback(`Wrong! The capital of ${currentQuestion.country} is ${currentQuestion.capital}`);
+      switch (currentQuestion.questionType) {
+        case QUESTION_TYPES.CAPITAL:
+          setFeedback(`Wrong! The capital of ${currentQuestion.name} is ${currentQuestion.capital}`);
+          break;
+        case QUESTION_TYPES.FLAG:
+          setFeedback(`Wrong! This is the flag of ${currentQuestion.name}`);
+          break;
+        case QUESTION_TYPES.REVERSE_CAPITAL:
+          setFeedback(`Wrong! ${currentQuestion.capital} is the capital of ${currentQuestion.name}`);
+          break;
+      }
     }
     
     setQuestionsAnswered(prev => prev + 1);
@@ -119,15 +172,15 @@ const CapitalCitiesGame = () => {
 
     // Add to answer log
     setAnswerLog(prev => [{
-      country: currentQuestion.country,
+      flag: currentQuestion.code,
+      country: currentQuestion.name,
+      questionType: currentQuestion.questionType,
       difficulty: currentQuestion.difficulty,
       userAnswer: userAnswer.trim(),
-      correctAnswer: currentQuestion.capital,
+      correctAnswer: correctAnswer,
       isCorrect: isCorrect,
       points: isCorrect ? difficulty * 10 : 0
-    }, ...prev]);
-    
-    // Check if game should end
+    }, ...prev]);    // Check if game should end
     if (!isCorrect && lives <= 1) {
       setTimeout(() => endGame(), 2000);
       return;
@@ -140,6 +193,15 @@ const CapitalCitiesGame = () => {
       setShowAnswer(false);
       const nextQuestion = generateQuestion();
       if (nextQuestion) {
+        console.log('New question:', nextQuestion); // Debug log
+        if (nextQuestion.name === currentQuestion.name) {
+          console.log('Warning: Same question generated!', {
+            availableQuestions: COUNTRIES_DATA.filter(country => country.difficulty <= difficulty && 
+              !Object.values(QUESTION_TYPES).some(type => usedQuestionTypes.has(`${country.name}-${type}`))),
+            usedQuestionTypes: Array.from(usedQuestionTypes),
+            currentDifficulty: difficulty
+          });
+        }
         setCurrentQuestion(nextQuestion);
       } else {
         endGame();
@@ -297,13 +359,50 @@ const CapitalCitiesGame = () => {
         {currentQuestion && (
           <div className="text-center mb-8">
             <div className="bg-white/10 rounded-xl p-6 border border-white/20 mb-6">
-              <h2 className="text-2xl font-bold text-white mb-4">
-                What is the capital of
-              </h2>
-              <div className="text-4xl font-bold text-yellow-300 mb-2">
-                {currentQuestion.country}
-              </div>
-              <div className="text-sm text-white/60">
+              {(() => {
+                switch (currentQuestion.questionType) {
+                  case QUESTION_TYPES.CAPITAL:
+                    return (
+                      <>
+                        <h2 className="text-2xl font-bold text-white mb-4">
+                          What is the capital of
+                        </h2>
+                        <div className="flex flex-col items-center gap-3">
+                          <span className={`fi fi-${currentQuestion.code} text-5xl w-24 h-16 rounded-lg shadow-lg border-2 border-white/20`}></span>
+                          <div className="text-4xl font-bold text-yellow-300">
+                            {currentQuestion.name}
+                          </div>
+                        </div>
+                      </>
+                    );
+                  case QUESTION_TYPES.FLAG:
+                    return (
+                      <>
+                        <h2 className="text-2xl font-bold text-white mb-4">
+                          What country does this flag belong to?
+                        </h2>
+                        <div className="flex justify-center mb-4">
+                          <span className={`fi fi-${currentQuestion.code} text-7xl w-32 h-24 rounded-lg shadow-lg border-2 border-white/20`}></span>
+                        </div>
+                      </>
+                    );
+                  case QUESTION_TYPES.REVERSE_CAPITAL:
+                    return (
+                      <>
+                        <h2 className="text-2xl font-bold text-white mb-4">
+                          <span className="text-4xl font-bold text-yellow-300">{currentQuestion.capital}</span>
+                          <div className="mt-3">is the capital of which country?</div>
+                        </h2>
+                        <div className="flex justify-center mb-4">
+                          <span className={`fi fi-${currentQuestion.code} text-5xl w-24 h-16 rounded-lg shadow-lg border-2 border-white/20 opacity-0`}></span>
+                        </div>
+                      </>
+                    );
+                  default:
+                    return null;
+                }
+              })()}
+              <div className="text-sm text-white/60 mt-4">
                 Difficulty: {currentQuestion.difficulty} | Points: {currentQuestion.difficulty * 10}
               </div>
             </div>
@@ -316,7 +415,7 @@ const CapitalCitiesGame = () => {
                   onChange={(e) => setUserAnswer(e.target.value)}
                   onKeyPress={handleKeyPress}
                   className="w-full px-4 py-3 text-lg rounded-xl bg-white/20 border border-white/30 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-yellow-400 text-center"
-                  placeholder="Enter capital city..."
+                  placeholder={currentQuestion.questionType === QUESTION_TYPES.CAPITAL ? "Enter capital city..." : "Enter country name..."}
                   disabled={showAnswer}
                   autoFocus
                 />
@@ -356,8 +455,17 @@ const CapitalCitiesGame = () => {
                           : 'bg-red-500/10 border-red-400/30'
                       }`}
                     >
-                      <div className="flex justify-between text-sm">
-                        <span className="text-white/90">{log.country}</span>
+                      <div className="flex items-center justify-between text-sm">
+                        <div className="flex items-center gap-2">
+                          <span className={`fi fi-${log.flag} w-6 h-4`}></span>
+                          <span className="text-white/90">
+                            {log.questionType === QUESTION_TYPES.CAPITAL ? 
+                              `${log.country} → ${log.correctAnswer}` : 
+                              log.questionType === QUESTION_TYPES.REVERSE_CAPITAL ?
+                                `${log.correctAnswer} → ${log.userAnswer}` :
+                                log.correctAnswer}
+                          </span>
+                        </div>
                         <span className="text-white/70">Difficulty: {log.difficulty}</span>
                       </div>
                       <div className="mt-1 text-sm">

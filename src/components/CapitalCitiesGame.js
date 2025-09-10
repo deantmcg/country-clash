@@ -6,7 +6,7 @@ import LanguageSelector from './LanguageSelector';
 // Game data from JSON file
 const COUNTRIES_DATA = countriesData.countries.map(country => ({
   ...country,
-  flag: `fi fi-${country.code}` // Add flag class for each country
+  flag: `fi fi-${country.code.toLowerCase()}`
 }));
 
 const CapitalCitiesGame = () => {
@@ -264,11 +264,17 @@ const CapitalCitiesGame = () => {
   };
 
   // Render main menu
-  if (gameState === 'menu') {
+  if (gameState === 'menu' || gameState === 'menu-update') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 flex items-center justify-center p-4">
         <div className="absolute top-4 right-4">
-          <LanguageSelector onChange={() => setCurrentQuestion(currentQuestion)} />
+          <LanguageSelector onChange={() => {
+            // Force update by toggling a state value
+            setGameState(prev => {
+              // Toggle between menu and menu-update to force re-render
+              return prev === 'menu' ? 'menu-update' : 'menu';
+            });
+          }} />
         </div>
         <div className="bg-white/10 backdrop-blur-md rounded-3xl p-8 max-w-md w-full border border-white/20 shadow-2xl">
           <div className="text-center mb-8">
@@ -324,13 +330,19 @@ const CapitalCitiesGame = () => {
   }
 
   // Render game over screen
-  if (gameState === 'gameOver') {
+  if (gameState === 'gameOver' || gameState === 'gameOver-update') {
     const isHighScore = highScores.length > 0 && score >= Math.min(...highScores.map(s => s.score));
     
     return (
       <div className="min-h-screen bg-gradient-to-br from-red-900 via-purple-900 to-pink-900 flex items-center justify-center p-4">
         <div className="absolute top-4 right-4">
-          <LanguageSelector onChange={() => setCurrentQuestion(currentQuestion)} />
+          <LanguageSelector onChange={() => {
+            // Force update by toggling a state value
+            setGameState(prev => {
+              // Toggle between gameOver and gameOver-update to force re-render
+              return prev === 'gameOver' ? 'gameOver-update' : 'gameOver';
+            });
+          }} />
         </div>
         <div className="bg-white/10 backdrop-blur-md rounded-3xl p-8 max-w-md w-full border border-white/20 shadow-2xl text-center">
           <div className="text-6xl mb-4">
@@ -364,7 +376,10 @@ const CapitalCitiesGame = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-900 via-teal-900 to-cyan-900 flex items-center justify-center p-4">
         <div className="absolute top-4 right-4">
-          <LanguageSelector onChange={() => setCurrentQuestion(currentQuestion)} />
+          <LanguageSelector onChange={() => {
+            // Force an immediate re-render by creating a new question object
+            setCurrentQuestion({...currentQuestion});
+          }} />
         </div>
       <div className="bg-white/10 backdrop-blur-md rounded-3xl p-8 max-w-lg w-full border border-white/20 shadow-2xl">
         {/* Game stats */}

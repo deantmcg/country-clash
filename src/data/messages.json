@@ -60,8 +60,8 @@
       "correctAnswer": "Correct answer: {0}"
     },
     "result": {
-        "highScore": "New High Score!",
-        "gameOver": "Game Over!"
+      "highScore": "New High Score!",
+      "gameOver": "Game Over!"
     }
   },
   "es": {
@@ -125,8 +125,73 @@
       "correctAnswer": "Respuesta correcta: {0}"
     },
     "result": {
-        "highScore": "¡Nuevo récord!",
-        "gameOver": "¡Fin del juego!"
+      "highScore": "¡Nuevo récord!",
+      "gameOver": "¡Fin del juego!"
+    }
+  },
+  "ga": {
+    "game": {
+      "instructions": "Téigh i dtaithí ar d’eolas geografach!"
+    },
+    "questions": {
+      "capitalOf": "Cén príomhchathair atá ag",
+      "countryOf": "Cén tír ina bhfuil",
+      "flagOf": "Cén tír a bhaineann leis an mbratach seo?"
+    },
+    "errors": {
+      "enterName": "Cuir isteach do ainm más é do thoil é chun an cluiche a thosú!"
+    },
+    "input": {
+      "enterName": "Cuir isteach d’ainm:",
+      "namePlaceholder": "D’ainm…",
+      "answerPlaceholder": {
+        "capital": "Cuir isteach príomhchathair…",
+        "country": "Cuir isteach ainm na tíre…"
+      }
+    },
+    "buttons": {
+      "startGame": " Tosaigh Cluiche",
+      "submitAnswer": "Cuir Freagra isteach ",
+      "returnToMenu": " Fill ar an Roghchlár",
+      "skipQuestion": "Scipeáil"
+    },
+    "stats": {
+      "score": "Scór: {0}",
+      "level": "Leibhéal {0}",
+      "questions": "Ceisteanna: {0}",
+      "finalStats": {
+        "score": "Scór Deiridh: {0}",
+        "questionsAnswered": "Ceisteanna Freagraithe: {0}",
+        "highestDifficulty": "Deacracht is Airde: {0}"
+      }
+    },
+    "highScores": {
+      "title": " Na Scóir Is Airde",
+      "entry": "{0}. {1}"
+    },
+    "tips": {
+      "difficultyIncrease": " Méadaíonn an deacracht gach 5 freagra ceart",
+      "lives": " Tá 3 shaol agat — go n-éirí an t-ádh!"
+    },
+    "feedback": {
+      "points": "+{0} pointí",
+      "difficultyIncrease": "Méadaíodh an deacracht!",
+      "correctPoints": "Ceart! +{0} pointí",
+      "wrongCapital": "Mícheart! príomhchathair {0} ná {1}",
+      "wrongFlag": "Mícheart! bratach {0} atá anseo",
+      "wrongCountry": "Mícheart! is í {1} príomhchathair {0}"
+    },
+    "answerLog": {
+      "title": "Log Freagraí:",
+      "capitalFormat": "{0}  {1}",
+      "reverseCapitalFormat": "{0}  {1}",
+      "difficulty": "Deacracht: {0}",
+      "yourAnswer": "Do fhreagra: {0}",
+      "correctAnswer": "Freagra ceart: {0}"
+    },
+    "result": {
+      "highScore": "Scór Nua is Airde!",
+      "gameOver": "Tá an cluiche thart!"
     }
   }
 }

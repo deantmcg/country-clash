@@ -4,7 +4,8 @@ import { getCurrentLanguage, setLanguage, getAvailableLanguages } from "../utils
 // Map of language codes to their flags and names
 const languageInfo = {
   "en": { flag: "gb", name: "English" },
-  "es": { flag: "es", name: "Español" }
+  "es": { flag: "es", name: "Español" },
+  "ga": { flag: "ie", name: "Gaeilge" }
 };
 
 const LanguageSelector = ({ onChange }) => {

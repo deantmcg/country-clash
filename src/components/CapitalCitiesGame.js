@@ -2,6 +2,11 @@ import React, { useState, useEffect } from 'react';
 import countriesData from '../data/countries.json';
 import { getMessage } from '../utils/messageUtils';
 import LanguageSelector from './LanguageSelector';
+import { GAME_STATES, QUESTION_TYPES, GAME_SETTINGS } from '../constants/gameConstants';
+import { useGameState } from '../hooks/useGameState';
+import { checkAnswer, generateQuestion, createLogEntry, getQuestionFeedback } from '../utils/gameUtils';
+import GameStats from './GameStats';
+import AnswerLog from './AnswerLog';
 
 // Game data from JSON file
 const COUNTRIES_DATA = countriesData.countries.map(country => ({
@@ -10,79 +15,59 @@ const COUNTRIES_DATA = countriesData.countries.map(country => ({
 }));
 
 const CapitalCitiesGame = () => {
-  // Question types
-  const QUESTION_TYPES = {
-    CAPITAL: 'capital',         // "What is the capital of Spain?"
-    FLAG: 'flag',              // "What country does this flag belong to?"
-    REVERSE_CAPITAL: 'reverse'  // "Madrid is the capital of which country?"
-  };
+  const {
+    gameState,
+    setGameState,
+    score,
+    setScore,
+    lives,
+    setLives,
+    questionsAnswered,
+    setQuestionsAnswered,
+    difficulty,
+    setDifficulty,
+    highScores,
+    usedCountries,
+    setUsedCountries,
+    answerLog,
+    setAnswerLog,
+    saveHighScore,
+    resetGameState
+  } = useGameState();
 
-  // Game state
-  const [gameState, setGameState] = useState('menu'); // 'menu', 'playing', 'gameOver'
   const [currentQuestion, setCurrentQuestion] = useState(null);
-  const [score, setScore] = useState(0);
-  const [lives, setLives] = useState(3);
-  const [questionsAnswered, setQuestionsAnswered] = useState(0);
-  const [difficulty, setDifficulty] = useState(1);
   const [userAnswer, setUserAnswer] = useState('');
   const [feedback, setFeedback] = useState('');
   const [showAnswer, setShowAnswer] = useState(false);
-  const [highScores, setHighScores] = useState([]);
   const [playerName, setPlayerName] = useState('');
-  const [usedCountries, setUsedCountries] = useState(new Set());
-  const [lastQuestionType, setLastQuestionType] = useState(null);
-  const [answerLog, setAnswerLog] = useState([]);
-
-  // Load high scores on component mount
-  useEffect(() => {
-    const savedScores = JSON.parse(localStorage.getItem('capitalCitiesHighScores') || '[]');
-    setHighScores(savedScores);
-  }, []);
 
   // Generate a new question based on current difficulty
-  const generateQuestion = () => {
-    // Get countries that haven't been used yet at the current difficulty
-    let availableCountries = COUNTRIES_DATA.filter(country => 
-      country.difficulty <= difficulty && 
-      !usedCountries.has(country.name)
-    );
+  const getNextQuestion = () => {
+    const question = generateQuestion(COUNTRIES_DATA, difficulty, usedCountries);
     
-    if (availableCountries.length === 0) {
-      // If we've used all countries at this difficulty, check if we can increase difficulty
-      if (difficulty < 3) {
-        setDifficulty(prev => prev + 1);
-        availableCountries = COUNTRIES_DATA.filter(country => 
-          country.difficulty <= (difficulty + 1) && 
+    if (question) {
+      // Mark this country as used
+      setUsedCountries(prev => new Set([...prev, question.name]));
+      
+      // If we've used all countries at current difficulty, increase it
+      if (difficulty < GAME_SETTINGS.MAX_DIFFICULTY) {
+        const remainingAtCurrentDifficulty = COUNTRIES_DATA.filter(country => 
+          country.difficulty <= difficulty && 
           !usedCountries.has(country.name)
-        );
+        ).length;
+        
+        if (remainingAtCurrentDifficulty === 0) {
+          setDifficulty(prev => prev + 1);
+        }
       }
       
-      if (availableCountries.length === 0) {
-        // No more questions available at any difficulty
-        return null;
-      }
+      console.log('Generated question:', {
+        country: question.name,
+        questionType: question.questionType,
+        difficulty: question.difficulty,
+        remainingCountries: COUNTRIES_DATA.filter(c => !usedCountries.has(c.name)).length - 1
+      });
     }
-    
-    // Pick a random country from available ones
-    const randomIndex = Math.floor(Math.random() * availableCountries.length);
-    const country = availableCountries[randomIndex];
-    
-    // Pick a random question type
-    const questionTypes = Object.values(QUESTION_TYPES);
-    const questionType = questionTypes[Math.floor(Math.random() * questionTypes.length)];
-    setLastQuestionType(questionType);
-    
-    // Mark this country as used
-    setUsedCountries(prev => new Set([...prev, country.name]));
-    
-    const question = { ...country, questionType };
-    
-    console.log('Generated question:', {
-      country: question.name,
-      questionType,
-      difficulty: question.difficulty,
-      remainingCountries: availableCountries.length - 1
-    });
     
     return question;
   };
@@ -95,18 +80,13 @@ const CapitalCitiesGame = () => {
     }
     
     console.log('Starting new game'); // Debug log
-    setGameState('playing');
-    setScore(0);
-    setLives(3);
-    setQuestionsAnswered(0);
-    setDifficulty(1);
-    setUsedCountries(new Set()); // Reset used countries
+    setGameState(GAME_STATES.PLAYING);
+    resetGameState();
     setUserAnswer('');
     setFeedback('');
     setShowAnswer(false);
-    setAnswerLog([]);
     
-    const question = generateQuestion();
+    const question = getNextQuestion();
     console.log('Initial question:', question); // Debug log
     setCurrentQuestion(question);
   };
@@ -170,29 +150,18 @@ const CapitalCitiesGame = () => {
     setUsedCountries(prev => new Set([...prev, currentQuestion.name]));
     
     if (isCorrect) {
-      const points = difficulty * 10;
+      const points = difficulty * GAME_SETTINGS.POINTS_MULTIPLIER;
       setScore(prev => prev + points);
-      setFeedback(getFeedbackMessage(currentQuestion, true, points));
+      setFeedback(getQuestionFeedback(currentQuestion, true, points));
     } else {
       setLives(prev => prev - 1);
-      setFeedback(getFeedbackMessage(currentQuestion, false));
+      setFeedback(getQuestionFeedback(currentQuestion, false));
     }
     
     setQuestionsAnswered(prev => prev + 1);
     setShowAnswer(true);
 
-    // Create and add new log entry
-    const createLogEntry = (question, userAns, correct, correctAns) => ({
-      flag: question.code,
-      country: question.name,
-      questionType: question.questionType,
-      difficulty: question.difficulty,
-      userAnswer: userAns.trim(),
-      correctAnswer: correctAns,
-      isCorrect: correct,
-      points: correct ? question.difficulty * 10 : 0
-    });
-
+    // Add new log entry
     setAnswerLog(prev => [
       createLogEntry(currentQuestion, userAnswer, isCorrect, correctAnswer),
       ...prev
@@ -201,7 +170,7 @@ const CapitalCitiesGame = () => {
     // Check if game should end due to no lives
     if (!isCorrect && lives <= 1) {
       setLives(0); // Ensure lives are set to 0
-      setTimeout(() => endGame(), 2000);
+      setTimeout(() => endGame(), GAME_SETTINGS.FEEDBACK_DELAY);
       return;
     }
     
@@ -210,7 +179,7 @@ const CapitalCitiesGame = () => {
       setUserAnswer('');
       setFeedback('');
       setShowAnswer(false);
-      const nextQuestion = generateQuestion();
+      const nextQuestion = getNextQuestion();
       if (nextQuestion) {
         console.log('New question:', nextQuestion); // Debug log
         if (nextQuestion.name === currentQuestion.name) {
@@ -227,38 +196,51 @@ const CapitalCitiesGame = () => {
       } else {
         endGame();
       }
-    }, 2000);
+    }, GAME_SETTINGS.FEEDBACK_DELAY);
   };
 
   // End game and save high score
   const endGame = () => {
-    setGameState('gameOver');
-    
-    // Save high score
-    const newScore = {
-      name: playerName,
-      score: score,
-      questions: questionsAnswered,
-      date: new Date().toLocaleDateString()
-    };
-    
-    const updatedScores = [...highScores, newScore]
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 10); // Keep top 10 scores
-    
-    setHighScores(updatedScores);
-    localStorage.setItem('capitalCitiesHighScores', JSON.stringify(updatedScores));
+    setGameState(GAME_STATES.GAME_OVER);
+    saveHighScore(playerName, score, questionsAnswered);
   };
 
   // Reset to main menu
   const returnToMenu = () => {
-    setGameState('menu');
+    setGameState(GAME_STATES.MENU);
     setPlayerName('');
+  };
+
+  // Skip the current question
+  const skipQuestion = () => {
+    setShowAnswer(true);
+    setFeedback(getQuestionFeedback(currentQuestion, false));
+    
+    // Mark country as used when skipped
+    setUsedCountries(prev => new Set([...prev, currentQuestion.name]));
+    
+    if (lives <= 1) {
+      setLives(0);
+      setTimeout(() => endGame(), GAME_SETTINGS.FEEDBACK_DELAY);
+    } else {
+      setLives(prev => prev - 1);
+      setTimeout(() => {
+        setUserAnswer('');
+        setFeedback('');
+        setShowAnswer(false);
+        const nextQuestion = getNextQuestion();
+        if (nextQuestion) {
+          setCurrentQuestion(nextQuestion);
+        } else {
+          endGame();
+        }
+      }, GAME_SETTINGS.FEEDBACK_DELAY);
+    }
   };
 
   // Handle keyboard input
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter' && !showAnswer && gameState === 'playing') {
+    if (e.key === 'Enter' && !showAnswer && gameState === GAME_STATES.PLAYING) {
       submitAnswer();
     }
   };
@@ -488,13 +470,13 @@ const CapitalCitiesGame = () => {
                           setUserAnswer('');
                           setFeedback('');
                           setShowAnswer(false);
-                          const nextQuestion = generateQuestion();
+                          const nextQuestion = getNextQuestion();
                           if (nextQuestion) {
                             setCurrentQuestion(nextQuestion);
                           } else {
                             endGame();
                           }
-                        }, 2000);
+                        }, GAME_SETTINGS.FEEDBACK_DELAY);
                       }
                     }}
                     title={getMessage('buttons.skipQuestion')}

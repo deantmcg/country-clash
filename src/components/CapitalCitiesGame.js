@@ -29,7 +29,7 @@ const CapitalCitiesGame = () => {
   const [showAnswer, setShowAnswer] = useState(false);
   const [highScores, setHighScores] = useState([]);
   const [playerName, setPlayerName] = useState('');
-  const [usedQuestionTypes, setUsedQuestionTypes] = useState(new Set());
+  const [usedCountries, setUsedCountries] = useState(new Set());
   const [lastQuestionType, setLastQuestionType] = useState(null);
   const [answerLog, setAnswerLog] = useState([]);
 
@@ -39,52 +39,49 @@ const CapitalCitiesGame = () => {
     setHighScores(savedScores);
   }, []);
 
-  // Helper: get available question types for a country
-  const getAvailableQuestionTypes = (countryName) => {
-    return Object.values(QUESTION_TYPES).filter(type => 
-      !usedQuestionTypes.has(`${countryName}-${type}`)
-    );
-  };
-
-  // Helper: select a random question type
-  const selectRandomQuestionType = (country) => {
-    const availableTypes = getAvailableQuestionTypes(country.name);
-    const questionType = availableTypes[Math.floor(Math.random() * availableTypes.length)];
-    setLastQuestionType(questionType);
-    return questionType;
-  };
-
-  // Helper: get available countries for current difficulty
-  const getAvailableCountries = () => {
-    return COUNTRIES_DATA.filter(country => 
-      country.difficulty <= difficulty && 
-      getAvailableQuestionTypes(country.name).length > 0
-    );
-  };
-
   // Generate a new question based on current difficulty
   const generateQuestion = () => {
-    let availableCountries = getAvailableCountries();
+    // Get countries that haven't been used yet at the current difficulty
+    let availableCountries = COUNTRIES_DATA.filter(country => 
+      country.difficulty <= difficulty && 
+      !usedCountries.has(country.name)
+    );
     
     if (availableCountries.length === 0) {
-      // Reset used questions if we've exhausted all options
-      setUsedQuestionTypes(new Set());
-      availableCountries = COUNTRIES_DATA.filter(country => country.difficulty <= difficulty);
-      if (availableCountries.length === 0) return null;
+      // If we've used all countries at this difficulty, check if we can increase difficulty
+      if (difficulty < 3) {
+        setDifficulty(prev => prev + 1);
+        availableCountries = COUNTRIES_DATA.filter(country => 
+          country.difficulty <= (difficulty + 1) && 
+          !usedCountries.has(country.name)
+        );
+      }
+      
+      if (availableCountries.length === 0) {
+        // No more questions available at any difficulty
+        return null;
+      }
     }
     
+    // Pick a random country from available ones
     const randomIndex = Math.floor(Math.random() * availableCountries.length);
     const country = availableCountries[randomIndex];
-    const questionType = selectRandomQuestionType(country);
+    
+    // Pick a random question type
+    const questionTypes = Object.values(QUESTION_TYPES);
+    const questionType = questionTypes[Math.floor(Math.random() * questionTypes.length)];
+    setLastQuestionType(questionType);
+    
+    // Mark this country as used
+    setUsedCountries(prev => new Set([...prev, country.name]));
     
     const question = { ...country, questionType };
     
     console.log('Generated question:', {
       country: question.name,
       questionType,
-      lastType: lastQuestionType,
       difficulty: question.difficulty,
-      remainingQuestions: availableCountries.length
+      remainingCountries: availableCountries.length - 1
     });
     
     return question;
@@ -103,7 +100,7 @@ const CapitalCitiesGame = () => {
     setLives(3);
     setQuestionsAnswered(0);
     setDifficulty(1);
-    setUsedQuestionTypes(new Set());
+    setUsedCountries(new Set()); // Reset used countries
     setUserAnswer('');
     setFeedback('');
     setShowAnswer(false);
@@ -169,10 +166,8 @@ const CapitalCitiesGame = () => {
     
     const { isCorrect, correctAnswer } = checkAnswer(currentQuestion, userAnswer);
     
-    // Mark this question type as used for this country
-    const newUsedQuestions = new Set(usedQuestionTypes);
-    newUsedQuestions.add(`${currentQuestion.name}-${currentQuestion.questionType}`);
-    setUsedQuestionTypes(newUsedQuestions);
+    // Mark this country as used
+    setUsedCountries(prev => new Set([...prev, currentQuestion.name]));
     
     if (isCorrect) {
       const points = difficulty * 10;
@@ -201,8 +196,11 @@ const CapitalCitiesGame = () => {
     setAnswerLog(prev => [
       createLogEntry(currentQuestion, userAnswer, isCorrect, correctAnswer),
       ...prev
-    ]);    // Check if game should end
+    ]);
+
+    // Check if game should end due to no lives
     if (!isCorrect && lives <= 1) {
+      setLives(0); // Ensure lives are set to 0
       setTimeout(() => endGame(), 2000);
       return;
     }
@@ -217,9 +215,11 @@ const CapitalCitiesGame = () => {
         console.log('New question:', nextQuestion); // Debug log
         if (nextQuestion.name === currentQuestion.name) {
           console.log('Warning: Same question generated!', {
-            availableQuestions: COUNTRIES_DATA.filter(country => country.difficulty <= difficulty && 
-              !Object.values(QUESTION_TYPES).some(type => usedQuestionTypes.has(`${country.name}-${type}`))),
-            usedQuestionTypes: Array.from(usedQuestionTypes),
+            availableQuestions: COUNTRIES_DATA.filter(country => 
+              country.difficulty <= difficulty && 
+              !usedCountries.has(country.name)
+            ),
+            usedCountries: Array.from(usedCountries),
             currentDifficulty: difficulty
           });
         }
@@ -460,18 +460,27 @@ const CapitalCitiesGame = () => {
                     onClick={() => {
                       setShowAnswer(true);
                       setFeedback(getFeedbackMessage(currentQuestion, false));
-                      setLives(prev => prev - 1);
-                      setTimeout(() => {
-                        setUserAnswer('');
-                        setFeedback('');
-                        setShowAnswer(false);
-                        const nextQuestion = generateQuestion();
-                        if (nextQuestion) {
-                          setCurrentQuestion(nextQuestion);
-                        } else {
-                          endGame();
-                        }
-                      }, 2000);
+                      
+                      // Mark country as used when skipped
+                      setUsedCountries(prev => new Set([...prev, currentQuestion.name]));
+                      
+                      if (lives <= 1) {
+                        setLives(0);
+                        setTimeout(() => endGame(), 2000);
+                      } else {
+                        setLives(prev => prev - 1);
+                        setTimeout(() => {
+                          setUserAnswer('');
+                          setFeedback('');
+                          setShowAnswer(false);
+                          const nextQuestion = generateQuestion();
+                          if (nextQuestion) {
+                            setCurrentQuestion(nextQuestion);
+                          } else {
+                            endGame();
+                          }
+                        }, 2000);
+                      }
                     }}
                     title={getMessage('buttons.skipQuestion')}
                     className="aspect-square h-[58px] bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transform hover:scale-105 transition-all shadow-lg flex items-center justify-center text-2xl"

@@ -1,4 +1,4 @@
-# Capital Cities Quiz Game 🌍
+# Country Clash 🌍
 
 A React-based quiz game that tests your knowledge of countries and their capital cities. This is a modern web version of the original C# WinForms Capital Cities Game I created in one of my first software development modules.
 

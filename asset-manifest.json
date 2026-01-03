@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/country-clash/static/css/main.84e5f991.css",
+    "main.js": "/country-clash/static/js/main.998aaa3c.js",
+    "index.html": "/country-clash/index.html",
+    "main.84e5f991.css.map": "/country-clash/static/css/main.84e5f991.css.map",
+    "main.998aaa3c.js.map": "/country-clash/static/js/main.998aaa3c.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.84e5f991.css",
+    "static/js/main.998aaa3c.js"
+  ]
+}

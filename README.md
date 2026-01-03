@@ -1,6 +1,6 @@
 # Capital Cities Quiz Game 🌍
 
-A React-based quiz game that tests your knowledge of countries and their capital cities. This is a modern web version of the original C# WinForms Capital Cities Game.
+A React-based quiz game that tests your knowledge of countries and their capital cities. This is a modern web version of the original C# WinForms Capital Cities Game I created in one of my first software development modules.
 
 ## Features
 
@@ -8,7 +8,7 @@ A React-based quiz game that tests your knowledge of countries and their capital
 - **Lives System**: 3 lives to keep you engaged
 - **Dynamic Scoring**: Points scale with difficulty (10/20/30 points)
 - **High Score Tracking**: Persistent leaderboard with top 10 scores
-- **Modern UI**: Beautiful gradients and glassmorphism effects
+- **Modern UI**: Nice gradients and glassmorphism effects
 - **Responsive Design**: Works on desktop and mobile devices
 - **Keyboard Support**: Press Enter to submit answers
 
@@ -54,6 +54,19 @@ npm run build
 ```
 
 The build files will be in the `build/` directory, ready to deploy to any web server.
+
+### Deploying to GitHub Pages
+
+Deploy to GitHub Pages:
+
+```bash
+npm run deploy
+```
+
+This will build and publish the game to: `https://deantmcg.github.io/country-clash`
+
+**First-time setup**: After deploying, enable GitHub Pages in your repository settings (Settings → Pages → Source: `gh-pages` branch).
+
 
 ## Project Structure
 

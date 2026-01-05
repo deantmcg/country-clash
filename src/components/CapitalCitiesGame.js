@@ -32,7 +32,10 @@ const CapitalCitiesGame = () => {
     answerLog,
     setAnswerLog,
     saveHighScore,
-    resetGameState
+    resetGameState,
+    isLoadingScores,
+    apiError,
+    setApiError
   } = useGameState();
 
   const [currentQuestion, setCurrentQuestion] = useState(null);
@@ -286,6 +289,18 @@ const CapitalCitiesGame = () => {
             >
               {getMessage('buttons.startGame')}
             </button>
+            
+            {apiError && (
+              <div className="bg-yellow-500/20 border border-yellow-400/50 rounded-xl p-3 text-yellow-100 text-sm">
+                ⚠️ {apiError}
+              </div>
+            )}
+            
+            {isLoadingScores && (
+              <div className="text-center text-white/70 text-sm">
+                Loading high scores...
+              </div>
+            )}
             
             {highScores.length > 0 && (
               <div className="bg-white/10 rounded-xl p-4 border border-white/20">

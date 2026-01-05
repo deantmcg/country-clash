@@ -1,12 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import countriesData from '../data/countries.json';
 import { getMessage } from '../utils/messageUtils';
 import LanguageSelector from './LanguageSelector';
 import { GAME_STATES, QUESTION_TYPES, GAME_SETTINGS } from '../constants/gameConstants';
 import { useGameState } from '../hooks/useGameState';
-import { checkAnswer, generateQuestion, createLogEntry, getQuestionFeedback } from '../utils/gameUtils';
-import GameStats from './GameStats';
-import AnswerLog from './AnswerLog';
+import { generateQuestion, createLogEntry, getQuestionFeedback } from '../utils/gameUtils';
 
 // Game data from JSON file
 const COUNTRIES_DATA = countriesData.countries.map(country => ({
@@ -34,8 +32,7 @@ const CapitalCitiesGame = () => {
     saveHighScore,
     resetGameState,
     isLoadingScores,
-    apiError,
-    setApiError
+    apiError
   } = useGameState();
 
   const [currentQuestion, setCurrentQuestion] = useState(null);
@@ -75,6 +72,20 @@ const CapitalCitiesGame = () => {
     return question;
   };
 
+  // Get wrong answer feedback message
+  const getWrongFeedbackMessage = (question) => {
+    switch (question.questionType) {
+      case QUESTION_TYPES.CAPITAL:
+        return getMessage('feedback.wrongCapital', question.name, question.capital);
+      case QUESTION_TYPES.FLAG:
+        return getMessage('feedback.wrongFlag', question.name);
+      case QUESTION_TYPES.REVERSE_CAPITAL:
+        return getMessage('feedback.wrongCountry', question.capital, question.name);
+      default:
+        return '';
+    }
+  };
+
   // Start a new game
   const startGame = () => {
     if (!playerName.trim()) {
@@ -92,41 +103,6 @@ const CapitalCitiesGame = () => {
     const question = getNextQuestion();
     console.log('Initial question:', question); // Debug log
     setCurrentQuestion(question);
-  };
-
-  // Check if difficulty should increase
-  const shouldIncreaseDifficulty = () => {
-    return (questionsAnswered + 1) % 5 === 0 && difficulty < 3;
-  };
-
-  // Get correct answer feedback message
-  const getCorrectFeedbackMessage = (points) => {
-    let feedback = getMessage('feedback.correctPoints', points);
-    if (shouldIncreaseDifficulty()) {
-      feedback = `${feedback} - ${getMessage('feedback.difficultyIncrease')}`;
-    }
-    return feedback;
-  };
-
-  // Get wrong answer feedback message
-  const getWrongFeedbackMessage = (question) => {
-    switch (question.questionType) {
-      case QUESTION_TYPES.CAPITAL:
-        return getMessage('feedback.wrongCapital', question.name, question.capital);
-      case QUESTION_TYPES.FLAG:
-        return getMessage('feedback.wrongFlag', question.name);
-      case QUESTION_TYPES.REVERSE_CAPITAL:
-        return getMessage('feedback.wrongCountry', question.capital, question.name);
-      default:
-        return '';
-    }
-  };
-
-  // Get feedback message based on question type and result
-  const getFeedbackMessage = (question, isCorrect, points = 0) => {
-    return isCorrect 
-      ? getCorrectFeedbackMessage(points)
-      : getWrongFeedbackMessage(question);
   };
 
   // Helper function to check answers
@@ -217,7 +193,7 @@ const CapitalCitiesGame = () => {
   // Skip the current question
   const skipQuestion = () => {
     setShowAnswer(true);
-    setFeedback(getQuestionFeedback(currentQuestion, false));
+    setFeedback(getWrongFeedbackMessage(currentQuestion));
     
     // Mark country as used when skipped
     setUsedCountries(prev => new Set([...prev, currentQuestion.name]));
@@ -469,31 +445,7 @@ const CapitalCitiesGame = () => {
                 
                 <div className="flex gap-2">
                   <button
-                    onClick={() => {
-                      setShowAnswer(true);
-                      setFeedback(getFeedbackMessage(currentQuestion, false));
-                      
-                      // Mark country as used when skipped
-                      setUsedCountries(prev => new Set([...prev, currentQuestion.name]));
-                      
-                      if (lives <= 1) {
-                        setLives(0);
-                        setTimeout(() => endGame(), 2000);
-                      } else {
-                        setLives(prev => prev - 1);
-                        setTimeout(() => {
-                          setUserAnswer('');
-                          setFeedback('');
-                          setShowAnswer(false);
-                          const nextQuestion = getNextQuestion();
-                          if (nextQuestion) {
-                            setCurrentQuestion(nextQuestion);
-                          } else {
-                            endGame();
-                          }
-                        }, GAME_SETTINGS.FEEDBACK_DELAY);
-                      }
-                    }}
+                    onClick={skipQuestion}
                     title={getMessage('buttons.skipQuestion')}
                     className="aspect-square h-[58px] bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transform hover:scale-105 transition-all shadow-lg flex items-center justify-center text-2xl"
                   >

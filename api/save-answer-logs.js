@@ -53,8 +53,8 @@ export default async function handler(req, res) {
         throw new Error('Difficulty must be between 1 and 3');
       }
 
-      if (typeof isCorrect !== 'boolean') {
-        throw new Error('isCorrect must be a boolean');
+      if (typeof isCorrect !== 'boolean' && isCorrect !== 0 && isCorrect !== 1) {
+        throw new Error('isCorrect must be a boolean or 0/1');
       }
 
       if (typeof pointsEarned !== 'number' || pointsEarned < 0) {

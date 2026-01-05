@@ -181,6 +181,8 @@ const CapitalCitiesGame = () => {
   // End game and save high score
   const endGame = () => {
     setGameState(GAME_STATES.GAME_OVER);
+    // Save happens asynchronously - game proceeds immediately
+    // If API fails, it falls back to localStorage
     saveHighScore(playerName, score, questionsAnswered);
   };
 

@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/country-clash/static/css/main.84e5f991.css",
-    "main.js": "/country-clash/static/js/main.998aaa3c.js",
-    "index.html": "/country-clash/index.html",
-    "main.84e5f991.css.map": "/country-clash/static/css/main.84e5f991.css.map",
-    "main.998aaa3c.js.map": "/country-clash/static/js/main.998aaa3c.js.map"
+    "main.css": "/static/css/main.75a420a6.css",
+    "main.js": "/static/js/main.1db954c1.js",
+    "index.html": "/index.html",
+    "main.75a420a6.css.map": "/static/css/main.75a420a6.css.map",
+    "main.1db954c1.js.map": "/static/js/main.1db954c1.js.map"
   },
   "entrypoints": [
-    "static/css/main.84e5f991.css",
-    "static/js/main.998aaa3c.js"
+    "static/css/main.75a420a6.css",
+    "static/js/main.1db954c1.js"
   ]
 }

@@ -194,12 +194,24 @@ const CapitalCitiesGame = () => {
 
   // Skip the current question
   const skipQuestion = () => {
+    const correctAnswer = currentQuestion.questionType === QUESTION_TYPES.CAPITAL
+      ? currentQuestion.capital
+      : currentQuestion.name;
+
     setShowAnswer(true);
     setFeedback(getWrongFeedbackMessage(currentQuestion));
     
     // Mark country as used when skipped
     setUsedCountries(prev => new Set([...prev, currentQuestion.name]));
     
+    setQuestionsAnswered(prev => prev + 1);
+
+    // Add new log entry for skipped question
+    setAnswerLog(prev => [
+      createLogEntry(currentQuestion, '(SKIPPED)', false, correctAnswer),
+      ...prev
+    ]);
+
     if (lives <= 1) {
       setLives(0);
       setTimeout(() => endGame(), GAME_SETTINGS.FEEDBACK_DELAY);

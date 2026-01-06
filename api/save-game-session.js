@@ -87,7 +87,7 @@ export default async function handler(req, res) {
     return res.status(201).json({ 
       success: true, 
       message: 'Game session saved successfully',
-      sessionId: result.lastInsertRowid
+      sessionId: result.lastInsertRowid?.toString()
     });
 
   } catch (error) {

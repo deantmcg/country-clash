@@ -63,7 +63,7 @@ export default async function handler(req, res) {
     return res.status(201).json({ 
       success: true, 
       message: 'High score saved successfully',
-      id: result.lastInsertRowid
+      id: result.lastInsertRowid?.toString()
     });
 
   } catch (error) {

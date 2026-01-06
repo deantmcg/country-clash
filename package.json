@@ -2,9 +2,9 @@
   "name": "capital-cities-game",
   "version": "1.0.0",
   "description": "A React-based capital cities quiz game",
-  "homepage": "https://deantmcg.github.io/country-clash",
   "private": true,
   "dependencies": {
+    "@libsql/client": "^0.15.15",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-scripts": "^5.0.1"

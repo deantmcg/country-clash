@@ -24,6 +24,7 @@ A React-based quiz game that tests your knowledge of countries and their capital
 
 - Node.js (version 14 or higher)
 - npm or yarn
+- Vercel CLI (for local testing with API endpoints)
 
 ### Installation
 
@@ -38,12 +39,22 @@ A React-based quiz game that tests your knowledge of countries and their capital
    npm install
    ```
 
-4. Start the development server:
+4. **For full functionality with backend API**, install Vercel CLI and run with:
+   ```bash
+   npm install -g vercel
+   vercel dev
+   ```
+   This starts the app at `http://localhost:3000` with working serverless functions.
+
+   **Alternative**: Run without backend (uses localStorage only):
    ```bash
    npm start
    ```
+   Note: API calls will fail and data will only be stored locally in your browser.
 
 5. Open your browser and go to `http://localhost:3000`
+
+> **Important**: To test the Turso database integration locally, you must use `vercel dev` instead of `npm start`. See the [Database Setup](#database-setup-turso) section below for configuration details.
 
 ### Building for Production
 
@@ -90,8 +101,116 @@ capital-cities-game/
 
 - **React 18** - Frontend framework
 - **Tailwind CSS** - Utility-first CSS framework
-- **Local Storage** - For persistent high scores
+- **Turso** - Cloud SQLite database for persistent high scores and game data
+- **Vercel Serverless Functions** - Backend API endpoints
 - **Create React App** - Build tooling
+
+## Database Setup (Turso)
+
+This application uses [Turso](https://turso.tech/), a free and easy-to-deploy cloud SQLite database for persistent storage of high scores and game sessions.
+
+### Setting Up Turso
+
+1. **Create a Turso account** at [https://turso.tech/](https://turso.tech/)
+
+2. **Install the Turso CLI** (optional but recommended):
+   ```bash
+   curl -sSfL https://get.tur.so/install.sh | bash
+   ```
+
+3. **Create a new database**:
+   ```bash
+   turso db create country-clash
+   ```
+
+4. **Get your database URL**:
+   ```bash
+   turso db show country-clash --url
+   ```
+
+5. **Generate an authentication token**:
+   ```bash
+   turso db tokens create country-clash
+   ```
+
+6. **Initialize the database schema**:
+   The database schema includes three tables:
+   - `high_scores` - Stores player scores from completed games
+   - `game_sessions` - Detailed information about individual game sessions
+   - `answer_log` - Individual question/answer records
+
+   Use the Turso CLI to execute the schema:
+   ```bash
+   turso db shell country-clash < schema.sql
+   ```
+
+   Or use the Turso web dashboard to run the SQL schema provided in the issue.
+
+### Environment Variables
+
+1. Copy `.env.example` to `.env`:
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Fill in your Turso credentials:
+   ```
+   TURSO_DATABASE_URL=libsql://your-database-name.turso.io
+   TURSO_AUTH_TOKEN=your-auth-token-here
+   REACT_APP_API_URL=/api
+   ```
+
+### Deploying to Vercel
+
+1. **Install Vercel CLI**:
+   ```bash
+   npm install -g vercel
+   ```
+
+2. **Deploy to Vercel**:
+   ```bash
+   vercel
+   ```
+
+3. **Set environment variables in Vercel**:
+   ```bash
+   vercel env add TURSO_DATABASE_URL
+   vercel env add TURSO_AUTH_TOKEN
+   ```
+
+   Or set them in the Vercel dashboard under Project Settings → Environment Variables.
+
+4. **Deploy to production**:
+   ```bash
+   vercel --prod
+   ```
+
+### Local Development with Backend
+
+To test the serverless functions locally:
+
+1. Install Vercel CLI (if not already installed)
+2. Run the development server:
+   ```bash
+   vercel dev
+   ```
+
+This will start both the React app and the serverless functions locally.
+
+## API Endpoints
+
+The application includes the following API endpoints:
+
+- `GET /api/get-high-scores` - Fetch top 10 high scores
+- `POST /api/save-high-score` - Save a new high score
+- `POST /api/save-game-session` - Save complete game session details
+- `POST /api/save-answer-logs` - Save individual answer logs
+
+All endpoints handle CORS and include appropriate error handling.
+
+## Offline/Fallback Mode
+
+The application includes a fallback mechanism to localStorage if the Turso database is unavailable. This ensures the game remains playable even if there are network issues or database connectivity problems. When the database becomes available again, the application will resume using it for persistent storage.
 
 ## Game Data
 

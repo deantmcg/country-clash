@@ -28,8 +28,15 @@ export const useGameState = () => {
       setHighScores(scores);
     } catch (error) {
       console.error('Failed to load high scores:', error);
-      setApiError('Failed to load high scores. They will be available once connection is restored.');
-      // Optionally fallback to localStorage
+      
+      // Provide helpful error message based on error type
+      let errorMessage = 'Failed to load high scores from database. Using local storage instead.';
+      if (error.message.includes('Unexpected token') || error.message.includes('JSON')) {
+        errorMessage = 'API not available. Run "vercel dev" to test with database, or continue with local storage.';
+      }
+      
+      setApiError(errorMessage);
+      // Fallback to localStorage
       const savedScores = JSON.parse(localStorage.getItem('capitalCitiesHighScores') || '[]');
       setHighScores(savedScores);
     } finally {

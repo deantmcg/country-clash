@@ -24,6 +24,7 @@ A React-based quiz game that tests your knowledge of countries and their capital
 
 - Node.js (version 14 or higher)
 - npm or yarn
+- Vercel CLI (for local testing with API endpoints)
 
 ### Installation
 
@@ -38,12 +39,22 @@ A React-based quiz game that tests your knowledge of countries and their capital
    npm install
    ```
 
-4. Start the development server:
+4. **For full functionality with backend API**, install Vercel CLI and run with:
+   ```bash
+   npm install -g vercel
+   vercel dev
+   ```
+   This starts the app at `http://localhost:3000` with working serverless functions.
+
+   **Alternative**: Run without backend (uses localStorage only):
    ```bash
    npm start
    ```
+   Note: API calls will fail and data will only be stored locally in your browser.
 
 5. Open your browser and go to `http://localhost:3000`
+
+> **Important**: To test the Turso database integration locally, you must use `vercel dev` instead of `npm start`. See the [Database Setup](#database-setup-turso) section below for configuration details.
 
 ### Building for Production
 
